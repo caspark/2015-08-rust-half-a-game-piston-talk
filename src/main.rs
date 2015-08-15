@@ -2,18 +2,15 @@ extern crate piston_window;
 extern crate ai_behavior;
 extern crate sprite;
 extern crate find_folder;
+extern crate uuid;
 
 use std::rc::Rc;
+use std::path::PathBuf;
 
 use piston_window::*;
-use sprite::*;
-use ai_behavior::{
-    Action,
-    Sequence,
-    Wait,
-    WaitForever,
-    While,
-};
+use sprite::{Animation, Blink, Ease, EaseFunction, FadeIn, FadeOut, MoveBy, RotateTo, ScaleTo, Scene, Sprite};
+use ai_behavior::{ Action, Behavior, Sequence, Wait, WaitForever, While };
+use uuid::Uuid;
 
 fn main() {
     let (width, height) = (300, 300);
@@ -25,23 +22,23 @@ fn main() {
         .build()
         .unwrap();
 
-    let assets = find_folder::Search::ParentsThenKids(3, 3)
+    let assets: PathBuf = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets").unwrap();
-    let id;
+
     let mut scene = Scene::new();
     let tex = Rc::new(Texture::from_path(
             &mut *window.factory.borrow_mut(),
-            assets.join("rust.png"),
+            assets.join("rust-sydney.png"),
             Flip::None,
             &TextureSettings::new()
         ).unwrap());
     let mut sprite = Sprite::from_texture(tex.clone());
     sprite.set_position(width as f64 / 2.0, height as f64 / 2.0);
 
-    id = scene.add_child(sprite);
+    let id: Uuid = scene.add_child(sprite);
 
     // Run a sequence or animations.
-    let seq = Sequence(vec![
+    let seq: Behavior<Animation> = Sequence(vec![
         Action(Ease(EaseFunction::CubicOut, Box::new(ScaleTo(2.0, 0.5, 0.5)))),
         Action(Ease(EaseFunction::BounceOut, Box::new(MoveBy(1.0, 0.0, 100.0)))),
         Action(Ease(EaseFunction::ElasticOut, Box::new(MoveBy(2.0, 0.0, -100.0)))),
@@ -57,7 +54,7 @@ fn main() {
     scene.run(id, &seq);
 
     // This animation and the one above can run in parallel.
-    let rotate = Action(Ease(EaseFunction::ExponentialInOut,
+    let rotate: Behavior<Animation> = Action(Ease(EaseFunction::ExponentialInOut,
         Box::new(RotateTo(2.0, 360.0))));
     scene.run(id, &rotate);
 
