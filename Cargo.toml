@@ -4,9 +4,14 @@ version = "0.1.0"
 authors = ["Caspar Krieger <caspar@asparck.com>"]
 
 [dependencies]
+# piston libs
 piston_window = "0.14.0"
-find_folder = "*"
 piston-ai_behavior = "*"
 piston2d-sprite = "*"
+# graphics libs
+gfx = "*"
 gfx_device_gl = "*"
+
+# other libs
 uuid = "*"
+find_folder = "*"
