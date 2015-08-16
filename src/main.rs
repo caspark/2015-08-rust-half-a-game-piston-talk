@@ -3,10 +3,12 @@ extern crate ai_behavior;
 extern crate sprite;
 extern crate find_folder;
 extern crate uuid;
+extern crate gfx_device_gl;
 
 use std::rc::Rc;
 use std::path::PathBuf;
 
+use gfx_device_gl::Resources;
 use piston_window::*;
 use sprite::{Animation, Blink, Ease, EaseFunction, FadeIn, FadeOut, MoveBy, RotateTo, ScaleTo, Scene, Sprite};
 use ai_behavior::{ Action, Behavior, Sequence, Wait, WaitForever, While };
@@ -25,14 +27,14 @@ fn main() {
     let assets: PathBuf = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets").unwrap();
 
-    let mut scene = Scene::new();
-    let tex = Rc::new(Texture::from_path(
+    let mut scene: Scene<Texture<Resources>> = Scene::new();
+    let tex: Rc<Texture<Resources>> = Rc::new(Texture::from_path(
             &mut *window.factory.borrow_mut(),
             assets.join("rust-sydney.png"),
             Flip::None,
             &TextureSettings::new()
         ).unwrap());
-    let mut sprite = Sprite::from_texture(tex.clone());
+    let mut sprite: Sprite<Texture<Resources>> = Sprite::from_texture(tex.clone());
     sprite.set_position(width as f64 / 2.0, height as f64 / 2.0);
 
     let id: Uuid = scene.add_child(sprite);
@@ -60,7 +62,7 @@ fn main() {
 
     println!("Press any key to pause/resume the animation!");
 
-    for e in window {
+    for e in window { // e is a PistonWindow
         scene.event(&e);
 
         e.draw_2d(|c, g| {
