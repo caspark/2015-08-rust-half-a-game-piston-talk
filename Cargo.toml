@@ -5,10 +5,10 @@ authors = ["Caspar Krieger <caspar@asparck.com>"]
 
 [dependencies]
 piston_window = "0.14.0"
-find_folder = "0.2.0"
-piston-ai_behavior = "0.7.0"
-piston2d-sprite = "0.9.0"
-image = "0.3.11"
-gfx = "0.6.5"
-gfx_device_gl = "0.4.1"
-uuid = "0.1.17"
+find_folder = "*"
+piston-ai_behavior = "*"
+piston2d-sprite = "*"
+image = "*"
+gfx = "*"
+gfx_device_gl = "*"
+uuid = "*"
