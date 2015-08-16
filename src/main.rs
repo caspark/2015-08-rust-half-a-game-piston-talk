@@ -76,13 +76,31 @@ fn run_intro(window: &PistonWindow, assets: &PathBuf) {
 }
 
 fn run_game(window: &PistonWindow, assets: &PathBuf) {
+    const GROUND_Y_POS: f64 = HEIGHT as f64 * 3.0 / 4.0;
+    const RUST_CHAR_SIZE: f64 = 64.0;
+
+    let rust_lang_tex: Rc<Texture<Resources>> = Rc::new(Texture::from_path(
+            &mut *window.factory.borrow_mut(),
+            assets.join("rust-lang.png"),
+            Flip::None,
+            &TextureSettings::new()
+        ).unwrap()); //FIXME transparency is not respected
+    let mut rust_lang_sprite: Sprite<Texture<Resources>> = Sprite::from_texture(rust_lang_tex.clone());
+    rust_lang_sprite.set_position(WIDTH as f64 / 8.0, GROUND_Y_POS - RUST_CHAR_SIZE / 2.0);
+
+
     for e in window.clone() {
-        println!("In inner loop now");
 
         e.draw_2d(|c, g| {
-            clear([0.0, 1.0, 1.0, 1.0], g);
-            //TODO do something interesting here
-            // scene.draw(c.transform, g);
+            clear([1.0, 1.0, 1.0, 1.0], g);
+
+            Rectangle::new([0.239, 0.404, 0.224, 1.0]) // deep green
+                .draw([0.0, GROUND_Y_POS, WIDTH as f64, HEIGHT as f64 / 4.0],
+                     &c.draw_state, c.transform, g);
+
+            rust_lang_sprite.draw(c.transform, g);
+            // or
+            // image(&rust_lang_tex, c.transform, g);
         });
     }
 }
