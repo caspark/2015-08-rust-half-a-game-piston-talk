@@ -22,18 +22,17 @@ const WIDTH: u32 = 300;
 const HEIGHT: u32 = 300;
 
 fn main() {
-    let opengl = OpenGL::V3_2;
     let window: PistonWindow =
         WindowSettings::new("piston: sprite", (WIDTH, HEIGHT))
         .exit_on_esc(true)
-        .opengl(opengl)
+        .opengl(OpenGL::V3_2)
         .build()
         .unwrap();
 
     let assets: PathBuf = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets").unwrap();
 
-    // run_intro(&window, &assets);
+    run_intro(&window, &assets);
     run_game(&window, &assets);
 }
 
@@ -65,14 +64,16 @@ fn run_intro(window: &PistonWindow, assets: &PathBuf) {
     scene.run(id, &rotate);
 
     for e in window.clone() {
-        scene.event(&e); // updates animations
+        // Confusingly e is also a PistonWindow, but, in practice, treat it as an event.
+
+        scene.event(&e); // updates animation state
 
         e.draw_2d(|c, g| {
             clear([1.0, 1.0, 1.0, 1.0], g);
             scene.draw(c.transform, g);
         });
-        if Some(Button::Keyboard(Key::Space)) == e.press_args() ||
-                Some(Button::Keyboard(Key::Return)) == e.press_args() ||
+        if e.press_args() == Some(Button::Keyboard(Key::Space)) ||
+                e.press_args() == Some(Button::Keyboard(Key::Return)) ||
                 scene.running() == 0 {
             return;
         }
