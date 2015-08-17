@@ -124,9 +124,8 @@ impl PlayerCharacter {
                 &TextureSettings::new()
             ).unwrap());
         let radius = tex.get_height() as f64 / 2.0 - 2.0; // take off 2 pixels for looks
-        let y_pos = GROUND_Y_POS - radius;
         let mut sprite = Sprite::from_texture(tex);
-        sprite.set_position(WIDTH as f64 / 8.0, y_pos);
+        sprite.set_position(WIDTH as f64 / 8.0, GROUND_Y_POS - radius);
         PlayerCharacter {
             sprite: sprite,
             radius: radius,
@@ -146,11 +145,15 @@ impl PlayerCharacter {
             clamp_between(x + vx * dt, 0.0 + self.radius, WIDTH as f64 - self.radius),
             clamp_between(y + vy * dt, 0.0, GROUND_Y_POS - self.radius)
         );
+
         self.velocity = [vx * 0.9, vy * 0.9];
         if self.velocity[0] > MAX_VELOCITY { self.velocity[0] = MAX_VELOCITY; }
         if self.velocity[0] < -MAX_VELOCITY { self.velocity[0] = -MAX_VELOCITY; }
         if self.velocity[1] > MAX_VELOCITY { self.velocity[1] = MAX_VELOCITY; }
         if self.velocity[1] < -MAX_VELOCITY { self.velocity[1] = -MAX_VELOCITY; }
+
+        let new_x = self.sprite.get_position().0;
+        self.sprite.set_rotation((new_x - self.radius) / (WIDTH as f64 - self.radius * 2.0) * 360.0);
     }
 }
 
