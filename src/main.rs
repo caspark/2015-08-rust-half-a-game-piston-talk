@@ -77,17 +77,16 @@ fn run_intro(window: &PistonWindow, assets: &PathBuf) {
 
 fn run_game(window: &PistonWindow, assets: &PathBuf) {
     const GROUND_Y_POS: f64 = HEIGHT as f64 * 3.0 / 4.0;
-    const RUST_CHAR_SIZE: f64 = 64.0;
 
     let rust_lang_tex: Rc<Texture<Resources>> = Rc::new(Texture::from_path(
             &mut *window.factory.borrow_mut(),
             assets.join("rust-lang.png"),
             Flip::None,
             &TextureSettings::new()
-        ).unwrap()); //FIXME transparency is not respected
+        ).unwrap());
+    let rust_char_height = rust_lang_tex.get_width() as f64;
     let mut rust_lang_sprite: Sprite<Texture<Resources>> = Sprite::from_texture(rust_lang_tex.clone());
-    rust_lang_sprite.set_position(WIDTH as f64 / 8.0, GROUND_Y_POS - RUST_CHAR_SIZE / 2.0);
-
+    rust_lang_sprite.set_position(WIDTH as f64 / 8.0, GROUND_Y_POS - rust_char_height / 2.0);
 
     for e in window.clone() {
 
