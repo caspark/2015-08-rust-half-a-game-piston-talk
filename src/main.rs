@@ -10,8 +10,8 @@ use std::path::PathBuf;
 
 use gfx_device_gl::Resources;
 use piston_window::*;
-use sprite::{Animation, Blink, Ease, EaseFunction, FadeIn, FadeOut, MoveBy, RotateTo, ScaleTo, Scene, Sprite};
-use ai_behavior::{ Action, Behavior, Sequence, Wait, WaitForever, While };
+use sprite::{Animation, Ease, EaseFunction, FadeOut, MoveBy, RotateTo, ScaleTo, Scene, Sprite};
+use ai_behavior::{ Action, Behavior, Sequence, Wait};
 use uuid::Uuid;
 
 const WIDTH: u32 = 300;
@@ -89,7 +89,6 @@ fn run_game(window: &PistonWindow, assets: &PathBuf) {
     rust_lang_sprite.set_position(WIDTH as f64 / 8.0, GROUND_Y_POS - rust_char_height / 2.0);
 
     for e in window.clone() {
-
         e.draw_2d(|c, g| {
             clear([1.0, 1.0, 1.0, 1.0], g);
 
@@ -98,8 +97,6 @@ fn run_game(window: &PistonWindow, assets: &PathBuf) {
                      &c.draw_state, c.transform, g);
 
             rust_lang_sprite.draw(c.transform, g);
-            // or
-            // image(&rust_lang_tex, c.transform, g);
         });
     }
 }
