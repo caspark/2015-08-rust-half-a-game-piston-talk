@@ -6,7 +6,8 @@ extern crate uuid;
 extern crate gfx_device_gl;
 
 use std::rc::Rc;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::collections::HashSet;
 
 use gfx_device_gl::Resources;
 use piston_window::*;
@@ -29,7 +30,7 @@ fn main() {
     let assets: PathBuf = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets").unwrap();
 
-    run_intro(&window, &assets);
+    // run_intro(&window, &assets);
     run_game(&window, &assets);
 }
 
@@ -75,20 +76,80 @@ fn run_intro(window: &PistonWindow, assets: &PathBuf) {
     }
 }
 
-fn run_game(window: &PistonWindow, assets: &PathBuf) {
-    const GROUND_Y_POS: f64 = HEIGHT as f64 * 3.0 / 4.0;
+const GROUND_Y_POS: f64 = HEIGHT as f64 * 3.0 / 4.0;
 
-    let rust_lang_tex: Rc<Texture<Resources>> = Rc::new(Texture::from_path(
-            &mut *window.factory.borrow_mut(),
-            assets.join("rust-lang.png"),
-            Flip::None,
-            &TextureSettings::new()
-        ).unwrap());
-    let rust_char_height = rust_lang_tex.get_width() as f64;
-    let mut rust_lang_sprite: Sprite<Texture<Resources>> = Sprite::from_texture(rust_lang_tex.clone());
-    rust_lang_sprite.set_position(WIDTH as f64 / 8.0, GROUND_Y_POS - rust_char_height / 2.0);
+struct PlayerCharacter {
+    sprite: Sprite<Texture<Resources>>, // tracks position, rotation, size, etc
+}
+
+impl PlayerCharacter {
+    fn new(window: &PistonWindow, image: &Path) -> Self {
+        let tex: Rc<Texture<Resources>> = Rc::new(Texture::from_path(
+                &mut *window.factory.borrow_mut(),
+                image,
+                Flip::None,
+                &TextureSettings::new()
+            ).unwrap());
+        PlayerCharacter {
+            sprite: Sprite::from_texture(tex),
+        }
+    }
+
+    fn get_height(&self) -> f64 {
+        self.sprite.get_texture().get_height() as f64 // ignore any scaling on the sprite
+    }
+
+    fn translate(&mut self, dx: f64, dy: f64, dt: f64) {
+        let (x, y) = self.sprite.get_position();
+        // println!("Current x and y: {:?}, dt = {}", (x, y), dt);
+        self.sprite.set_position(x + dx * dt, y + dy * dt);
+    }
+}
+
+struct KeyState {
+    held_keys: HashSet<Button>,
+}
+
+impl KeyState {
+    fn new() -> Self {
+        KeyState { held_keys: HashSet::new() }
+    }
+
+    fn update(&mut self, w: &PistonWindow) {
+        if let Some(pressed) = w.press_args() {
+            self.held_keys.insert(pressed);
+        }
+        if let Some(released) = w.release_args() {
+            self.held_keys.remove(&released);
+        }
+    }
+
+    fn is_down(&self, button: &Button) -> bool {
+        self.held_keys.contains(button)
+    }
+}
+
+fn run_game(window: &PistonWindow, assets: &PathBuf) {
+    let mut pc = PlayerCharacter::new(window, assets.join("rust-lang.png").as_ref());
+    {
+        let y_pos = GROUND_Y_POS - pc.get_height() / 2.0 + 2.0;
+        pc.sprite.set_position(WIDTH as f64 / 8.0, y_pos);
+    }
+
+    let mut key_state = KeyState::new();
 
     for e in window.clone() {
+        key_state.update(&e);
+
+        if let Some(UpdateArgs{ dt }) = e.update_args() {
+            if key_state.is_down(&Button::Keyboard(Key::Left)) {
+                pc.translate(-250.0, 0.0, dt);
+            }
+            if key_state.is_down(&Button::Keyboard(Key::Right)) {
+                pc.translate(250.0, 0.0, dt);
+            }
+        }
+
         e.draw_2d(|c, g| {
             clear([1.0, 1.0, 1.0, 1.0], g);
 
@@ -96,7 +157,7 @@ fn run_game(window: &PistonWindow, assets: &PathBuf) {
                 .draw([0.0, GROUND_Y_POS, WIDTH as f64, HEIGHT as f64 / 4.0],
                      &c.draw_state, c.transform, g);
 
-            rust_lang_sprite.draw(c.transform, g);
+            pc.sprite.draw(c.transform, g);
         });
     }
 }
