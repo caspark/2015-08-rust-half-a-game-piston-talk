@@ -133,27 +133,34 @@ impl PlayerCharacter {
         }
     }
 
+    fn is_on_ground(&self) -> bool {
+        let ground_y = GROUND_Y_POS - self.radius;
+        self.sprite.get_position().1 == ground_y
+    }
+
     fn accelerate(&mut self, dvx: f64, dvy: f64) {
         let [vx, vy] = self.velocity;
         self.velocity = [vx + dvx, vy + dvy];
     }
 
     fn update(&mut self, dt: f64) {
-        let (x, y) = self.sprite.get_position();
         let [vx, vy] = self.velocity;
-        self.sprite.set_position(
-            clamp_between(x + vx * dt, 0.0 + self.radius, WIDTH as f64 - self.radius),
-            clamp_between(y + vy * dt, 0.0, GROUND_Y_POS - self.radius)
-        );
-
         self.velocity = [vx * 0.9, vy * 0.9];
         if self.velocity[0] > MAX_VELOCITY { self.velocity[0] = MAX_VELOCITY; }
         if self.velocity[0] < -MAX_VELOCITY { self.velocity[0] = -MAX_VELOCITY; }
-        if self.velocity[1] > MAX_VELOCITY { self.velocity[1] = MAX_VELOCITY; }
-        if self.velocity[1] < -MAX_VELOCITY { self.velocity[1] = -MAX_VELOCITY; }
 
-        let new_x = self.sprite.get_position().0;
-        self.sprite.set_rotation((new_x - self.radius) / (WIDTH as f64 - self.radius * 2.0) * 360.0);
+        let (x, y) = self.sprite.get_position();
+        let new_x = clamp_between(x + vx * dt, 0.0 + self.radius, WIDTH as f64 - self.radius);
+        let new_y = clamp_between(y + vy * dt, 0.0 + self.radius, GROUND_Y_POS - self.radius);
+        self.sprite.set_position(new_x, new_y);
+
+        if self.is_on_ground() {
+            let rotation = self.sprite.get_rotation();
+            self.sprite.set_rotation(rotation + vx * dt * 2.0);
+            self.velocity[1] = 0.0; // hitting the group stops downward movement
+        } else { // character is in air
+            self.velocity[1] = self.velocity[1] + 10000.0 * dt; // apply gravity
+        }
     }
 }
 
@@ -197,6 +204,13 @@ fn run_game(window: &PistonWindow, assets: &PathBuf) {
             }
 
             pc.update(dt);
+        }
+
+        // to avoid missing jumps, listen for the keypress event rather than checking keydown state
+        if (e.press_args() == Some(Button::Keyboard(Key::Space))
+                || e.press_args() == Some(Button::Keyboard(Key::Up))
+                ) && pc.is_on_ground() {
+            pc.accelerate(0.0, -2000.0);
         }
 
         e.draw_2d(|c, g| {
