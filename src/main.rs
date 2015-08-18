@@ -23,7 +23,7 @@ const HEIGHT: u32 = 300;
 
 fn main() {
     let window: PistonWindow =
-        WindowSettings::new("piston: sprite", (WIDTH, HEIGHT))
+        WindowSettings::new("Rust Sydney", (WIDTH, HEIGHT))
         .exit_on_esc(true)
         .opengl(OpenGL::V3_2)
         .build()
